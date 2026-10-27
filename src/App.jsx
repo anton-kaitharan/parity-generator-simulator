@@ -69,13 +69,66 @@ function Icon({ name, size = 16 }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.75"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
       {paths[name]}
     </svg>
+  );
+}
+
+function LogicCube({ bits, parity, size = 56 }) {
+  const [a, b, c, d] = bits;
+  const palette = [
+    a ? '#ff0055' : '#e2e8f0',
+    b ? '#00d84a' : '#ffffff',
+    c ? '#2563eb' : '#f1f5f9',
+    d ? '#fff200' : '#e2e8f0',
+    parity ? '#b86bff' : '#ffffff',
+    (a ^ b) ? '#ff7a00' : '#f1f5f9',
+    (c ^ d) ? '#00d84a' : '#e2e8f0',
+    (b ^ c) ? '#ff00ff' : '#ffffff',
+    parity ? '#2563eb' : '#cbd5e1'
+  ];
+
+  const transforms = [
+    'translateZ(var(--half))',
+    'rotateY(180deg) translateZ(var(--half))',
+    'rotateY(90deg) translateZ(var(--half))',
+    'rotateY(-90deg) translateZ(var(--half))',
+    'rotateX(90deg) translateZ(var(--half))',
+    'rotateX(-90deg) translateZ(var(--half))'
+  ];
+
+  return (
+    <div
+      className="logic-cube-wrap"
+      style={{ '--cube-size': `${size}px` }}
+      role="img"
+      aria-label="3D rotating logic cube"
+    >
+      <div className="logic-cube">
+        {transforms.map((transform, faceIdx) => (
+          <div
+            key={faceIdx}
+            className="logic-cube-face"
+            style={{ transform }}
+          >
+            {palette.map((color, cellIdx) => (
+              <div
+                key={cellIdx}
+                className="logic-cube-cell"
+                style={{
+                  background: palette[(cellIdx + faceIdx * 2) % palette.length]
+                }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -100,7 +153,7 @@ function Gate({ id, x, y, label, delayTag, out, inA, inB, active, selected, onSe
       <text className="gate-name" x="44" y="106">{label}</text>
       <text className="gate-delay" x="44" y="-10">{delayTag}</text>
       <g className="gate-badge" transform="translate(96, 10)">
-        <rect x="0" y="0" width="22" height="19" rx="4" />
+        <rect x="0" y="0" width="22" height="19" rx="6" />
         <text x="11" y="13">{out}</text>
       </g>
     </g>
@@ -145,15 +198,15 @@ function Circuit({ bits, mode, result, onToggleBit, pulseKey }) {
         <div className="circuit-head-left">
           <span className="circuit-tag">
             <span className="live-dot" />
-            INTERACTIVE SCHEMATIC
+            LIVE LOGIC DIAGRAM
           </span>
           <span className="circuit-divider" />
-          <span className="circuit-note">Click input pins A–D to toggle · Hover gates to inspect</span>
+          <span className="circuit-note">Click input pins A–D to toggle · Hover any XOR gate to inspect</span>
         </div>
         <div className="circuit-timing-badges">
           <span className="timing-chip">3-STAGE CASCADE</span>
           <span className={`timing-chip mode-chip ${isOdd ? 'odd' : 'even'}`}>
-            {isOdd ? 'XNOR / ODD TAP' : 'XOR / EVEN TAP'}
+            {isOdd ? 'XNOR · ODD TAP' : 'XOR · EVEN TAP'}
           </span>
         </div>
       </div>
@@ -168,20 +221,16 @@ function Circuit({ bits, mode, result, onToggleBit, pulseKey }) {
         >
           <defs>
             <pattern id="minor-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-              <circle cx="12" cy="12" r="0.85" fill="rgba(161, 161, 170, 0.14)" />
+              <circle cx="12" cy="12" r="1.1" fill="rgba(148, 163, 184, 0.28)" />
             </pattern>
             <linearGradient id="gateGradOn" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#1e1b4b" />
-              <stop offset="100%" stopColor="#13112c" />
+              <stop offset="0%" stopColor="#f3e8ff" />
+              <stop offset="100%" stopColor="#e0e7ff" />
             </linearGradient>
             <linearGradient id="gateGradOff" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#18181f" />
-              <stop offset="100%" stopColor="#101015" />
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#f8fafc" />
             </linearGradient>
-            <filter id="signalGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3.5" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
           </defs>
 
           <rect width="960" height="410" fill="url(#minor-grid)" />
@@ -253,7 +302,7 @@ function Circuit({ bits, mode, result, onToggleBit, pulseKey }) {
                 }
               }}
             >
-              <rect className="input-pill" x="34" y={y - 16} width="82" height="32" rx="7" />
+              <rect className="input-pill" x="34" y={y - 16} width="82" height="32" rx="16" />
               <text className="wire-label" x="50" y={y + 5}>{name}</text>
               <circle className={`input-led ${val ? 'lit' : ''}`} cx="77" cy={y} r="4.5" />
               <text className={`wire-bit ${val ? 'bit-on' : ''}`} x="94" y={y + 5}>{val}</text>
@@ -303,14 +352,14 @@ function Circuit({ bits, mode, result, onToggleBit, pulseKey }) {
 
           {/* Output Terminals */}
           <g className={`output-terminal ${!isOdd ? 'terminal-selected' : ''}`} transform="translate(854, 137)">
-            <rect className="terminal-box" x="0" y="0" width="84" height="56" rx="8" />
+            <rect className="terminal-box" x="0" y="0" width="84" height="56" rx="14" />
             <circle className={`output-led ${x3 ? 'lit' : ''}`} cx="20" cy="28" r="6" />
             <text className="output-title" x="36" y="23">EVEN</text>
             <text className={`output-value ${x3 ? 'val-on' : ''}`} x="36" y="43">{x3}</text>
           </g>
 
           <g className={`output-terminal ${isOdd ? 'terminal-selected' : ''}`} transform="translate(854, 317)">
-            <rect className="terminal-box" x="0" y="0" width="84" height="56" rx="8" />
+            <rect className="terminal-box" x="0" y="0" width="84" height="56" rx="14" />
             <circle className={`output-led ${odd ? 'lit' : ''}`} cx="20" cy="28" r="6" />
             <text className="output-title" x="36" y="23">ODD</text>
             <text className={`output-value ${odd ? 'val-on' : ''}`} x="36" y="43">{odd}</text>
@@ -476,17 +525,15 @@ function App() {
 
   return (
     <main className="app-shell">
-      <div className="ambient-glow" aria-hidden="true" />
+      <div className="ambient-blob blob-blue" aria-hidden="true" />
+      <div className="ambient-blob blob-purple" aria-hidden="true" />
+      <div className="ambient-blob blob-mint" aria-hidden="true" />
 
       <header className="topbar">
         <a className="brand" href="#top">
-          <span className="brand-icon">
-            <Icon name="cpu" size={17} />
-          </span>
-          <span>
-            LOGIC<span className="brand-light">LAB</span>
-          </span>
-          <span className="brand-version">v2.4</span>
+          <LogicCube bits={bits} parity={parity} size={28} />
+          <span className="brand-word">logiclab</span>
+          <span className="brand-version">4-bit</span>
         </a>
 
         <nav className="top-nav" aria-label="Section navigation">
@@ -499,43 +546,58 @@ function App() {
         <div className="top-meta">
           <span className="status-pill">
             <span className="live-dot" />
-            REALTIME · 0ms
+            SIMULATOR ONLINE
           </span>
-          <span className="top-divider" />
-          <span className="course-label">4-BIT PARITY LAB</span>
         </div>
       </header>
 
       <div id="top" className="content">
         <section className="hero">
-          <div className="eyebrow">
-            <span className="eyebrow-pill">
-              <Icon name="spark" size={12} /> COMBINATIONAL LOGIC &amp; ERROR DETECTION
+          <div className="hero-cube-row">
+            <LogicCube bits={bits} parity={parity} size={74} />
+          </div>
+
+          <h1>
+            Parity Generator{' '}
+            <span className="highlight-wrap">
+              <span className="highlight-text">&amp; Checker</span>
+              <span className="highlight-bar" aria-hidden="true" />
+            </span>
+          </h1>
+
+          <p className="hero-subtitle">
+            Toggle 4-bit signals, watch XOR gates cascade in real time, and see how a single parity bit catches transmission noise.
+          </p>
+
+          <div className="learning-contrast" aria-label="Learning approach">
+            <span className="contrast-old">Dry truth tables, Rote formulas, Guessing</span>
+            <span className="contrast-arrow">→</span>
+            <span className="contrast-new">
+              Interactive switches, Visual signals,{' '}
+              <span className="highlight-wrap inline-highlight">
+                <span className="highlight-text">Intuition</span>
+                <span className="highlight-bar small-bar" aria-hidden="true" />
+              </span>
             </span>
           </div>
-          <h1>
-            Parity Generator <span>&amp; Checker</span>
-          </h1>
-          <p className="hero-subtitle">
-            Toggle 4-bit logic signals, trace real-time XOR propagation, and test single vs. multi-bit fault detection across a noisy channel.
-          </p>
 
           <div className="shortcut-bar" aria-label="Keyboard shortcuts">
             <span className="shortcut-item"><kbd>1</kbd>–<kbd>4</kbd> Toggle A–D</span>
-            <span className="shortcut-item"><kbd>M</kbd> Mode</span>
-            <span className="shortcut-item"><kbd>R</kbd> Random</span>
+            <span className="shortcut-item"><kbd>M</kbd> Even/Odd</span>
+            <span className="shortcut-item"><kbd>R</kbd> Randomize</span>
             <span className="shortcut-item"><kbd>E</kbd> Inject Noise</span>
             <span className="shortcut-item"><kbd>0</kbd> Reset</span>
           </div>
         </section>
 
+        {/* 01: Input Control Stage */}
         <section className="input-section panel" id="inputs">
           <div className="section-top">
             <div>
               <div className="section-kicker">
-                01 <span>/</span> INPUT VECTOR
+                01 <span>·</span> INPUT STAGE
               </div>
-              <h2>Data word switches</h2>
+              <h2>Set your 4-bit input word</h2>
             </div>
 
             <div className="action-buttons">
@@ -574,7 +636,7 @@ function App() {
                 <div className="switch-top">
                   <span className="switch-label">
                     {LABELS[i]}
-                    <span className="switch-pin">BIT {3 - i}</span>
+                    <span className="switch-pin">PIN {3 - i}</span>
                   </span>
                   <kbd className="key-badge">{KEY_HINTS[i]}</kbd>
                 </div>
@@ -620,20 +682,20 @@ function App() {
 
             <div className="telemetry-metrics">
               <div className="metric-box">
-                <span className="readout-label">DECIMAL / HEX</span>
+                <span className="readout-label">DEC / HEX</span>
                 <span className="metric-value">
                   {parseInt(binary(bits), 2)}
                   <small>0x{parseInt(binary(bits), 2).toString(16).toUpperCase()}</small>
                 </span>
               </div>
               <div className="metric-box">
-                <span className="readout-label">INPUT 1s (WEIGHT)</span>
+                <span className="readout-label">ONES COUNT</span>
                 <span className="metric-value">
                   {ones}<small> / 4 ({ones % 2 === 0 ? 'EVEN' : 'ODD'})</small>
                 </span>
               </div>
               <div className="metric-box highlight-metric">
-                <span className="readout-label">GENERATED PARITY</span>
+                <span className="readout-label">PARITY BIT</span>
                 <span className="metric-value parity-accent">
                   P = {parity}
                   <small>{(ones + parity) % 2 === 0 ? 'Σ EVEN' : 'Σ ODD'}</small>
@@ -643,6 +705,7 @@ function App() {
           </div>
         </section>
 
+        {/* 02: Interactive Logic Circuit */}
         <section className="circuit-section" id="circuit">
           <Circuit
             bits={bits}
@@ -653,12 +716,13 @@ function App() {
           />
         </section>
 
+        {/* Signal Breakdown & Equation Cards */}
         <section className="results-grid">
           <article className="result-card panel">
             <div className="result-head">
               <div>
-                <div className="section-kicker">GENERATOR OUTPUT</div>
-                <h2>{mode === 'even' ? 'Even' : 'Odd'} Parity Synthesis</h2>
+                <div className="section-kicker">GENERATED OUTPUT</div>
+                <h2>{mode === 'even' ? 'Even' : 'Odd'} parity synthesis</h2>
               </div>
               <span className="result-chip">
                 P<sub>{mode}</sub> = {parity}
@@ -678,11 +742,11 @@ function App() {
                 <p>
                   {mode === 'even'
                     ? ones % 2 === 0
-                      ? 'Input already has an even number of 1s, so P = 0 preserves even parity.'
-                      : 'Input has an odd number of 1s, so P = 1 brings the total 1-count to an even number.'
+                      ? 'Input already has an even number of 1s, so P = 0 keeps the total count even.'
+                      : 'Input has an odd number of 1s, so P = 1 brings the total count of 1s to an even number.'
                     : ones % 2 === 1
-                    ? 'Input already has an odd number of 1s, so P = 0 preserves odd parity.'
-                    : 'Input has an even number of 1s, so P = 1 brings the total 1-count to an odd number.'}
+                    ? 'Input already has an odd number of 1s, so P = 0 keeps the total count odd.'
+                    : 'Input has an even number of 1s, so P = 1 brings the total count of 1s to an odd number.'}
                 </p>
                 <div className="boolean-formula">
                   <code>
@@ -697,29 +761,29 @@ function App() {
           <article className="steps-card panel">
             <div className="result-head">
               <div>
-                <div className="section-kicker">PROPAGATION TRACE</div>
-                <h2>Gate-by-gate evaluation</h2>
+                <div className="section-kicker">SIGNAL BREAKDOWN</div>
+                <h2>Step-by-step XOR cascade</h2>
               </div>
-              <span className="result-chip subtle-chip">3 XOR LEVELS</span>
+              <span className="result-chip subtle-chip">3 GATES</span>
             </div>
 
             <div className="calculation">
               <div className={`calc-row ${step1 ? 'row-high' : ''}`}>
-                <span className="calc-number">τ₁</span>
+                <span className="calc-number">01</span>
                 <span className="calc-label">Stage 1 · A ⊕ B</span>
                 <span className="calc-equation">
                   <b>{bits[0]}</b> ⊕ <b>{bits[1]}</b> = <strong>{step1}</strong>
                 </span>
               </div>
               <div className={`calc-row ${step2 ? 'row-high' : ''}`}>
-                <span className="calc-number">τ₂</span>
+                <span className="calc-number">02</span>
                 <span className="calc-label">Stage 2 · X₁ ⊕ C</span>
                 <span className="calc-equation">
                   <b>{step1}</b> ⊕ <b>{bits[2]}</b> = <strong>{step2}</strong>
                 </span>
               </div>
               <div className={`calc-row ${even ? 'row-high' : ''}`}>
-                <span className="calc-number">τ₃</span>
+                <span className="calc-number">03</span>
                 <span className="calc-label">Stage 3 · X₂ ⊕ D</span>
                 <span className="calc-equation">
                   <b>{step2}</b> ⊕ <b>{bits[3]}</b> = <strong>{even}</strong>
@@ -727,8 +791,8 @@ function App() {
               </div>
               {mode === 'odd' && (
                 <div className="calc-row inversion">
-                  <span className="calc-number">τ₄</span>
-                  <span className="calc-label">Inverter · X̄₃</span>
+                  <span className="calc-number">04</span>
+                  <span className="calc-label">Inverter · NOT X₃</span>
                   <span className="calc-equation">
                     NOT <b>{even}</b> = <strong>{odd}</strong>
                   </span>
@@ -738,7 +802,7 @@ function App() {
 
             <div className="total-check">
               <span>
-                <Icon name="check" size={14} /> FRAME INVARIANT ({mode.toUpperCase()} RULE)
+                <Icon name="check" size={14} /> TOTAL ONES AFTER PARITY
               </span>
               <strong>
                 {ones + parity} ONES <small>{(ones + parity) % 2 === 0 ? 'EVEN' : 'ODD'}</small>
@@ -747,15 +811,22 @@ function App() {
           </article>
         </section>
 
+        {/* 03: Transmission Channel & Receiver Syndrome Checker */}
         <section className="checker-section panel" id="channel">
           <div className="section-top">
             <div>
               <div className="section-kicker">
-                03 <span>/</span> NOISY CHANNEL &amp; SYNDROME CHECKER
+                03 <span>·</span> TRANSMISSION CHANNEL
               </div>
-              <h2>Transmit &amp; inject bit errors</h2>
+              <h2>
+                Test the{' '}
+                <span className="highlight-wrap">
+                  <span className="highlight-text">parity checker</span>
+                  <span className="highlight-bar" aria-hidden="true" />
+                </span>
+              </h2>
               <p className="section-desc">
-                Click any received bit below to flip it in transit, or use the noise injectors to test single vs. double bit flips.
+                Click any received bit below to flip it in transit, or inject 1-bit vs. 2-bit noise to see how the receiver responds.
               </p>
             </div>
             <div className="channel-actions">
@@ -766,7 +837,7 @@ function App() {
                 <Icon name="activity" size={14} /> +2 Bit Noise
               </button>
               <button className="button transmit-button" onClick={transmit} title="Transmit clean frame (Shortcut: T)">
-                <Icon name="radio" size={15} /> Sync Clean TX
+                <Icon name="radio" size={15} /> Transmit Clean
               </button>
             </div>
           </div>
@@ -786,7 +857,7 @@ function App() {
                   <span className="bus-caption">
                     {flippedIndices.length === 0
                       ? 'CLEAN CHANNEL · 0 BIT FLIPS'
-                      : `${flippedIndices.length} BIT${flippedIndices.length > 1 ? 'S' : ''} CORRUPTED IN TRANSIT`}
+                      : `${flippedIndices.length} BIT${flippedIndices.length > 1 ? 'S' : ''} FLIPPED IN TRANSIT`}
                   </span>
                 </div>
 
@@ -798,9 +869,9 @@ function App() {
 
               <div className="received-row">
                 <div className="received-label">
-                  <span className="readout-label">RECEIVED 5-BIT WORD (CLICK ANY BIT TO CORRUPT / REPAIR)</span>
+                  <span className="readout-label">RECEIVED 5-BIT MESSAGE (CLICK ANY BIT TO FLIP IT)</span>
                   <span className="received-sub">
-                    Syndrome check: <code>A&apos; ⊕ B&apos; ⊕ C&apos; ⊕ D&apos; ⊕ P&apos; = {checkParity}</code>
+                    Receiver XOR check: <code>A&apos; ⊕ B&apos; ⊕ C&apos; ⊕ D&apos; ⊕ P&apos; = {checkParity}</code>
                   </span>
                 </div>
 
@@ -838,24 +909,24 @@ function App() {
                 <div className="status-copy">
                   <strong>
                     {errorDetected
-                      ? `Parity Error Detected (Syndrome = ${checkParity})`
+                      ? `Parity Error Detected! (Syndrome = ${checkParity})`
                       : undetectedCollision
-                      ? `Undetected ${flippedIndices.length}-Bit Error! (Syndrome = ${checkParity})`
-                      : `Frame Verified Integrity OK (Syndrome = ${checkParity})`}
+                      ? `Undetected ${flippedIndices.length}-Bit Collision! (Syndrome = ${checkParity})`
+                      : `No Error Detected — Message Verified (Syndrome = ${checkParity})`}
                   </strong>
                   <span>
                     {errorDetected
-                      ? `Receiver detected ${flippedIndices.length} flipped bit(s) [${flippedIndices
+                      ? `Flipped bit(s): [${flippedIndices
                           .map(i => (i === 4 ? 'P' : LABELS[i]))
-                          .join(', ')}]. Total 1s is now ${received.reduce((s, b) => s + b, 0)}, violating ${mode} parity.`
+                          .join(', ')}]. Total 1s is now ${received.reduce((s, b) => s + b, 0)}, which violates ${mode} parity.`
                       : undetectedCollision
                       ? `${flippedIndices.length} bits flipped [${flippedIndices
                           .map(i => (i === 4 ? 'P' : LABELS[i]))
-                          .join(', ')}]! Even numbers of bit errors cancel out in XOR, masking the corruption.`
-                      : `All 5 received bits match the ${mode} parity invariant. Total 1s = ${received.reduce(
+                          .join(', ')}]! Because an even number of bits flipped, the parity remains unchanged and the error slips through.`
+                      : `Received bits satisfy the ${mode} parity rule with ${received.reduce(
                           (s, b) => s + b,
                           0
-                        )}.`}
+                        )} total 1s.`}
                   </span>
                 </div>
                 <span className="status-mode">{mode.toUpperCase()} CHECK</span>
@@ -866,20 +937,21 @@ function App() {
           <div className="checker-foot">
             <Icon name="info" size={14} />
             <span>
-              <strong>Engineering Note:</strong> Single-bit parity has a Hamming distance of <code>d_min = 2</code>. It catches 100% of odd-bit errors (1, 3, 5 flips), but even-bit errors (2, 4 flips) preserve parity and pass silently.
+              Parity detects any <strong>odd number</strong> of bit flips (1, 3, 5). An <strong>even number</strong> of errors cancels out in modulo-2 addition.
             </span>
           </div>
         </section>
 
+        {/* 04: Interactive Truth Table */}
         <section className="truth-section" id="truth-table">
           <div className="section-top">
             <div>
               <div className="section-kicker">
-                04 <span>/</span> COMPLETE STATE SPACE
+                04 <span>·</span> COMPLETE STATE SPACE
               </div>
-              <h2>Interactive Truth Table</h2>
+              <h2>Interactive truth table</h2>
               <p className="section-desc">
-                Click any of the 16 input combinations below to load that vector directly into the circuit.
+                Click any row below to load that 4-bit combination into the simulator.
               </p>
             </div>
 
@@ -889,7 +961,7 @@ function App() {
                   className={tableFilter === 'all' ? 'active' : ''}
                   onClick={() => setTableFilter('all')}
                 >
-                  All (16)
+                  All 16 States
                 </button>
                 <button
                   className={tableFilter === 'even' ? 'active' : ''}
@@ -911,14 +983,14 @@ function App() {
             <table>
               <thead>
                 <tr>
-                  <th className="row-id">DEC</th>
+                  <th className="row-id">#</th>
                   <th>A</th>
                   <th>B</th>
                   <th>C</th>
                   <th>D</th>
-                  <th className="weight-col">1s COUNT</th>
-                  <th className={`split-col ${mode === 'even' ? 'col-active' : ''}`}>EVEN (P_even)</th>
-                  <th className={mode === 'odd' ? 'col-active' : ''}>ODD (P_odd)</th>
+                  <th className="weight-col">ONES</th>
+                  <th className={`split-col ${mode === 'even' ? 'col-active' : ''}`}>EVEN PARITY</th>
+                  <th className={mode === 'odd' ? 'col-active' : ''}>ODD PARITY</th>
                 </tr>
               </thead>
               <tbody>
@@ -930,7 +1002,7 @@ function App() {
                     title={`Click to load ABCD = ${row.join('')}`}
                   >
                     <td className="row-id">
-                      <span>{String(n).padStart(2, '0')}</span>
+                      <span>{String(n + 1).padStart(2, '0')}</span>
                     </td>
                     {row.map((v, i) => (
                       <td key={i} className={v ? 'table-one' : 'table-zero'}>
@@ -957,64 +1029,77 @@ function App() {
           <div className="section-top">
             <div>
               <div className="section-kicker">
-                05 <span>/</span> ARCHITECTURE NOTES
+                05 <span>·</span> QUICK THEORY
               </div>
-              <h2>Core Principles</h2>
+              <h2>
+                How{' '}
+                <span className="highlight-wrap">
+                  <span className="highlight-text">parity works</span>
+                  <span className="highlight-bar" aria-hidden="true" />
+                </span>
+              </h2>
             </div>
             <span className="theory-mark">
-              <Icon name="book" size={15} /> IC 74180 / 74280 EQUIVALENT
+              <Icon name="book" size={15} /> THE ESSENTIALS
             </span>
+          </div>
+
+          <div className="topic-pills">
+            <span className="topic-pill">⚡ Exclusive-OR (XOR)</span>
+            <span className="topic-pill">🔢 Modulo-2 Arithmetic</span>
+            <span className="topic-pill">📡 UART Serial Frames</span>
+            <span className="topic-pill">🛡️ Single-Error Detection</span>
+            <span className="topic-pill">🧮 Hamming Distance d=2</span>
+            <span className="topic-pill">🔌 IC 74180 / 74280</span>
+            <span className="topic-pill">💾 Memory Parity Bus</span>
           </div>
 
           <div className="theory-grid">
             <article className="theory-card">
               <span className="theory-icon">⊕</span>
-              <h3>Modulo-2 Addition</h3>
+              <h3>Parity &amp; parity bit</h3>
               <p>
-                An XOR gate computes addition modulo 2. Cascading <code>N - 1</code> two-input XOR gates extracts the parity of an <code>N</code>-bit bus in <code>O(N)</code> linear or <code>O(log N)</code> tree depth.
+                A lightweight error-checking method. One extra bit is appended to a binary word so the total count of <code>1</code>s always obeys a chosen rule.
               </p>
             </article>
             <article className="theory-card">
               <span className="theory-icon">01</span>
-              <h3>Even vs. Odd Selection</h3>
+              <h3>Even vs. odd rule</h3>
               <p>
-                Even parity sets <code>P = A ⊕ B ⊕ C ⊕ D</code>. Odd parity simply inverts the final stage (XNOR), often chosen in synchronous buses to guarantee at least one logic <code>1</code> per frame.
+                Even parity makes the total count of <code>1</code>s even. Odd parity makes the total count odd, guaranteeing at least one transition per frame.
               </p>
             </article>
             <article className="theory-card">
               <span className="theory-icon">
                 <Icon name="zap" size={16} />
               </span>
-              <h3>Syndrome Verification</h3>
+              <h3>Why XOR gates?</h3>
               <p>
-                The receiver XORs all 5 bits together: <code>S = A&apos; ⊕ B&apos; ⊕ C&apos; ⊕ D&apos; ⊕ P&apos;</code>. Because <code>X ⊕ X = 0</code>, an intact even-parity frame always yields <code>S = 0</code>.
+                XOR outputs <code>1</code> when its inputs differ. Cascading 3 XOR gates computes <code>A ⊕ B ⊕ C ⊕ D</code>, flagging an odd number of input <code>1</code>s.
               </p>
             </article>
             <article className="theory-card">
               <span className="theory-icon">
                 <Icon name="activity" size={16} />
               </span>
-              <h3>Hardware Applications</h3>
+              <h3>Uses &amp; limits</h3>
               <p>
-                Found in UART serial frames, PCI buses, L1 CPU caches, and RAID arrays. Where error correction is also required, engineers extend parity into Hamming ECC codes.
+                Used in UART links, CPU caches, and RAID arrays. Parity catches any odd number of bit flips, though even-count flips cancel out.
               </p>
             </article>
           </div>
         </section>
 
         <footer className="footer">
-          <span className="brand">
-            <span className="brand-icon">
-              <Icon name="cpu" size={15} />
-            </span>
-            <span>
-              LOGIC<span className="brand-light">LAB</span>
-            </span>
-          </span>
-          <span>4-BIT PARITY GENERATOR &amp; SYNDROME CHECKER</span>
-          <span>
-            DIGITAL ELECTRONICS <span className="footer-dot">·</span> INTERACTIVE LAB
-          </span>
+          <div className="footer-brand">
+            <LogicCube bits={bits} parity={parity} size={24} />
+            <span className="brand-word">logiclab</span>
+          </div>
+          <div className="footer-meta">
+            <span>4-BIT PARITY GENERATOR &amp; CHECKER</span>
+            <span>·</span>
+            <span>DIGITAL ELECTRONICS · 2026</span>
+          </div>
         </footer>
       </div>
     </main>
