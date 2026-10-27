@@ -19,3 +19,7 @@ Open the local URL printed by Vite. To create a production bundle, run `npm run 
 - Transmit a message, then click received bits to simulate a channel error.
 
 The app has no backend. The interface uses inline SVG for its logic circuit and icons.
+
+## Live demo
+
+https://anton-kaitharan.github.io/parity-generator-simulator/
