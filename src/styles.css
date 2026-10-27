@@ -1,5 +1,4 @@
 :root {
-  /* Polymath App (polymathapp.net) DaisyUI Pastel Design System */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #1f2937;
   background: #ffffff;
@@ -14,7 +13,7 @@
   --border: #e5e7eb;
   --border-strong: #d1d5db;
 
-  /* Polymath Pastel Tokens */
+  /* Pastel Tokens */
   --primary: #d8b4fe;        /* Pastel Lavender highlighter & primary button */
   --primary-strong: #9333ea; /* Rich Purple for active signal traces */
   --primary-soft: #f5f0ff;   /* Soft Lavender surface */
@@ -34,7 +33,7 @@
   --muted: #6b7280;
   --faint: #9ca3af;
 
-  /* Polymath Signature Font Stack */
+  /* Font Stack */
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --w95: 'VT323', 'DM Mono', monospace;
   --mono: 'DM Mono', monospace;
@@ -66,8 +65,8 @@ body {
   isolation: isolate;
 }
 
-/* Polymath Floating Pastel Blobs (animate-blob) */
-.polymath-blob {
+/* Floating Pastel Blobs */
+.ambient-blob {
   position: fixed;
   width: 340px;
   height: 220px;
@@ -77,7 +76,7 @@ body {
   pointer-events: none;
   z-index: -1;
   mix-blend-mode: multiply;
-  animation: polymathBlob 9s infinite ease-in-out;
+  animation: ambientBlob 9s infinite ease-in-out;
 }
 
 .blob-blue {
@@ -101,7 +100,7 @@ body {
   animation-delay: 4s;
 }
 
-/* Sticky Polymath Topbar */
+/* Sticky Topbar */
 .topbar {
   position: sticky;
   top: 0;
@@ -197,8 +196,8 @@ body {
   animation: pulse 2.2s ease-in-out infinite;
 }
 
-/* Signature Polymath 3D Rotating Pixel Cube */
-.polymath-cube-wrap {
+/* 3D Rotating Pixel Cube */
+.logic-cube-wrap {
   width: var(--cube-size, 56px);
   height: var(--cube-size, 56px);
   perspective: 220px;
@@ -206,17 +205,17 @@ body {
   flex-shrink: 0;
 }
 
-.polymath-cube {
+.logic-cube {
   position: relative;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  animation: polymathCubeSpin 18s steps(96, end) infinite;
+  animation: logicCubeSpin 18s steps(96, end) infinite;
   --half: calc(var(--cube-size, 56px) / 2);
   --gap: max(2px, calc(var(--cube-size, 56px) / 24));
 }
 
-.polymath-cube-face {
+.logic-cube-face {
   position: absolute;
   inset: 0;
   display: grid;
@@ -229,7 +228,7 @@ body {
   border-radius: 3px;
 }
 
-.polymath-cube-cell {
+.logic-cube-cell {
   box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.2);
   transition: background-color 0.25s ease;
 }
@@ -240,7 +239,7 @@ body {
   padding: 0 28px 72px;
 }
 
-/* Polymath Hero Section */
+/* Hero Section */
 .hero {
   text-align: center;
   padding: 52px 0 38px;
@@ -260,7 +259,7 @@ body {
   color: var(--text);
 }
 
-/* Polymath Tilted Pastel Highlighter Bar (-rotate-1) */
+/* Tilted Pastel Highlighter Bar (-rotate-1) */
 .highlight-wrap {
   position: relative;
   display: inline-block;
@@ -299,8 +298,8 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Polymath Before -> After Handwritten Contrast Row */
-.polymath-contrast {
+/* Before -> After Handwritten Contrast Row */
+.learning-contrast {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -357,7 +356,7 @@ kbd {
   padding: 1px 6px;
 }
 
-/* Panels & Rounded-3xl Polymath Cards */
+/* Panels & Rounded-3xl Cards */
 .panel {
   background: var(--panel);
   border: 1.5px solid var(--border);
@@ -400,7 +399,7 @@ kbd {
   color: var(--text-body);
 }
 
-/* Polymath Pill Buttons (--rounded-btn: 1.9rem) */
+/* Pill Buttons */
 .action-buttons,
 .channel-actions {
   display: flex;
@@ -1806,7 +1805,7 @@ td.col-active {
   font-weight: 700;
 }
 
-/* 05: Polymath Topic Pills & Theory Section */
+/* 05: Topic Pills & Theory Section */
 .theory-section {
   margin-top: 42px;
   padding: 28px;
@@ -1824,7 +1823,7 @@ td.col-active {
   color: var(--muted);
 }
 
-.polymath-pills {
+.topic-pills {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -1832,7 +1831,7 @@ td.col-active {
   margin: 20px 0 22px;
 }
 
-.polymath-pill {
+.topic-pill {
   padding: 7px 16px;
   background: #ffffff;
   border: 1px solid var(--border);
@@ -1843,7 +1842,7 @@ td.col-active {
   transition: transform 0.2s var(--ease-spring), border-color 0.2s;
 }
 
-.polymath-pill:hover {
+.topic-pill:hover {
   transform: translateY(-2px) rotate(-1deg);
   border-color: var(--primary);
 }
@@ -1933,7 +1932,7 @@ td.col-active {
 }
 
 /* Keyframe Animations */
-@keyframes polymathCubeSpin {
+@keyframes logicCubeSpin {
   0% {
     transform: rotateX(-22deg) rotateY(0deg);
   }
@@ -1945,7 +1944,7 @@ td.col-active {
   }
 }
 
-@keyframes polymathBlob {
+@keyframes ambientBlob {
   0%, 100% {
     transform: translate(0px, 0px) scale(1);
   }
