@@ -79,54 +79,97 @@ function Icon({ name, size = 16 }) {
   );
 }
 
-function LogicCube({ bits, parity, size = 56 }) {
-  const [a, b, c, d] = bits;
-  const palette = [
-    a ? '#ff0055' : '#e2e8f0',
-    b ? '#00d84a' : '#ffffff',
-    c ? '#2563eb' : '#f1f5f9',
-    d ? '#fff200' : '#e2e8f0',
-    parity ? '#b86bff' : '#ffffff',
-    (a ^ b) ? '#ff7a00' : '#f1f5f9',
-    (c ^ d) ? '#00d84a' : '#e2e8f0',
-    (b ^ c) ? '#ff00ff' : '#ffffff',
-    parity ? '#2563eb' : '#cbd5e1'
-  ];
+function XorBadge({ active }) {
+  return (
+    <span className={`xor-brand-badge ${active ? 'badge-active' : ''}`} aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M4 5c2.2 3.5 2.2 10.5 0 14"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M7.5 5H12c4.5 0 6.8 3 8.5 7-1.7 4-4 7-8.5 7H7.5c2.2-3.5 2.2-10.5 0-14Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        <circle cx="21.5" cy="12" r="1.5" fill="currentColor" />
+      </svg>
+    </span>
+  );
+}
 
-  const transforms = [
-    'translateZ(var(--half))',
-    'rotateY(180deg) translateZ(var(--half))',
-    'rotateY(90deg) translateZ(var(--half))',
-    'rotateY(-90deg) translateZ(var(--half))',
-    'rotateX(90deg) translateZ(var(--half))',
-    'rotateX(-90deg) translateZ(var(--half))'
-  ];
+function ParityChipHero({ bits, parity, mode, onToggleBit }) {
+  const frame = [...bits, parity];
+  const wavePoints = frame
+    .map((bit, idx) => {
+      const xStart = idx * 36;
+      const xEnd = (idx + 1) * 36;
+      const y = bit ? 8 : 26;
+      return `${xStart},${y} ${xEnd},${y}`;
+    })
+    .join(' ');
 
   return (
-    <div
-      className="logic-cube-wrap"
-      style={{ '--cube-size': `${size}px` }}
-      role="img"
-      aria-label="3D rotating logic cube"
-    >
-      <div className="logic-cube">
-        {transforms.map((transform, faceIdx) => (
-          <div
-            key={faceIdx}
-            className="logic-cube-face"
-            style={{ transform }}
+    <div className="ic-hero-wrap" role="region" aria-label="Interactive IC 74180 Parity Chip">
+      {/* Top Input Pins (A, B, C, D) */}
+      <div className="ic-pins-row top-pins">
+        {bits.map((bit, i) => (
+          <button
+            key={i}
+            type="button"
+            className={`ic-pin ${bit ? 'pin-high' : ''}`}
+            onClick={() => onToggleBit(i)}
+            title={`Click to toggle Pin ${LABELS[i]}`}
           >
-            {palette.map((color, cellIdx) => (
-              <div
-                key={cellIdx}
-                className="logic-cube-cell"
-                style={{
-                  background: palette[(cellIdx + faceIdx * 2) % palette.length]
-                }}
-              />
-            ))}
-          </div>
+            <span className="pin-name">{LABELS[i]}:{bit}</span>
+            <span className="pin-leg" />
+          </button>
         ))}
+      </div>
+
+      {/* Main Microchip Body */}
+      <div className="ic-body">
+        <div className="ic-notch" aria-hidden="true" />
+        <div className="ic-header">
+          <span className="ic-model">IC 74180 · XOR CORE</span>
+          <span className={`ic-parity-tag ${parity ? 'tag-high' : ''}`}>
+            P<sub>{mode}</sub> = {parity}
+          </span>
+        </div>
+
+        {/* Live 5-Bit Digital Square Waveform */}
+        <div className="ic-scope">
+          <svg viewBox="0 0 180 34" className="scope-svg" aria-label="5-bit digital waveform">
+            <line x1="0" y1="8" x2="180" y2="8" className="scope-grid-line" />
+            <line x1="0" y1="26" x2="180" y2="26" className="scope-grid-line" />
+            {[36, 72, 108, 144].map(x => (
+              <line key={x} x1={x} y1="2" x2={x} y2="32" className="scope-bit-divider" />
+            ))}
+            <polyline points={wavePoints} className="scope-trace" />
+            <polyline points={wavePoints} className="scope-trace-pulse" />
+          </svg>
+          <div className="scope-labels">
+            {LABELS.map((l, i) => (
+              <span key={l} className={bits[i] ? 'bit-hi' : ''}>{l}</span>
+            ))}
+            <span className="scope-p">P</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Output Pins */}
+      <div className="ic-pins-row bottom-pins">
+        <div className={`ic-pin out-pin ${mode === 'even' ? 'pin-selected' : ''}`}>
+          <span className="pin-leg" />
+          <span className="pin-name">Σ EVEN ({xor(...bits)})</span>
+        </div>
+        <div className={`ic-pin out-pin ${mode === 'odd' ? 'pin-selected' : ''}`}>
+          <span className="pin-leg" />
+          <span className="pin-name">Σ ODD ({xor(...bits) ^ 1})</span>
+        </div>
       </div>
     </div>
   );
@@ -531,7 +574,7 @@ function App() {
 
       <header className="topbar">
         <a className="brand" href="#top">
-          <LogicCube bits={bits} parity={parity} size={28} />
+          <XorBadge active={ Boolean(parity) } />
           <span className="brand-word">logiclab</span>
           <span className="brand-version">4-bit</span>
         </a>
@@ -554,7 +597,7 @@ function App() {
       <div id="top" className="content">
         <section className="hero">
           <div className="hero-cube-row">
-            <LogicCube bits={bits} parity={parity} size={74} />
+            <ParityChipHero bits={bits} parity={parity} mode={mode} onToggleBit={toggleBit} />
           </div>
 
           <h1>
@@ -1092,7 +1135,7 @@ function App() {
 
         <footer className="footer">
           <div className="footer-brand">
-            <LogicCube bits={bits} parity={parity} size={24} />
+            <XorBadge active={Boolean(parity)} />
             <span className="brand-word">logiclab</span>
           </div>
           <div className="footer-meta">
