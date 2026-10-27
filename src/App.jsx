@@ -60,12 +60,6 @@ function Icon({ name, size = 16 }) {
         <path d="M9.5 9a2.5 2.5 0 1 1 4.4 1.6c-1.2 1.1-1.9 1.4-1.9 3m0 3h.01" />
       </>
     ),
-    keyboard: (
-      <>
-        <rect x="2" y="5" width="20" height="14" rx="2" />
-        <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M9 13h6" />
-      </>
-    ),
     spark: <path d="M12 3v4m0 10v4M3 12h4m10 0h4m-2.8-6.2-2.8 2.8m-6.8 6.8-2.8 2.8m0-12.4 2.8 2.8m6.8 6.8 2.8 2.8" />
   };
   return (
@@ -174,15 +168,15 @@ function Circuit({ bits, mode, result, onToggleBit, pulseKey }) {
         >
           <defs>
             <pattern id="minor-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-              <circle cx="12" cy="12" r="0.8" fill="rgba(148, 175, 190, 0.14)" />
+              <circle cx="12" cy="12" r="0.85" fill="rgba(161, 161, 170, 0.14)" />
             </pattern>
             <linearGradient id="gateGradOn" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#102925" />
-              <stop offset="100%" stopColor="#0b181b" />
+              <stop offset="0%" stopColor="#1e1b4b" />
+              <stop offset="100%" stopColor="#13112c" />
             </linearGradient>
             <linearGradient id="gateGradOff" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#111820" />
-              <stop offset="100%" stopColor="#0b1016" />
+              <stop offset="0%" stopColor="#18181f" />
+              <stop offset="100%" stopColor="#101015" />
             </linearGradient>
             <filter id="signalGlow" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="3.5" result="blur" />
@@ -376,7 +370,6 @@ function App() {
   const expectedSyndrome = mode === 'even' ? 0 : 1;
   const errorDetected = received ? checkParity !== expectedSyndrome : false;
 
-  // Compare transmitted vs received to know actual bit flips
   const flippedIndices = useMemo(() => {
     if (!received) return [];
     return received.reduce((acc, bit, idx) => (bit !== outputData[idx] ? [...acc, idx] : acc), []);
@@ -387,10 +380,7 @@ function App() {
   const triggerPulse = () => setPulseKey(k => k + 1);
 
   const toggleBit = index => {
-    setBits(old => {
-      const next = old.map((bit, i) => (i === index ? bit ^ 1 : bit));
-      return next;
-    });
+    setBits(old => old.map((bit, i) => (i === index ? bit ^ 1 : bit)));
     triggerPulse();
   };
 
@@ -442,7 +432,6 @@ function App() {
     triggerPulse();
   };
 
-  // Sync parity bit when switching mode if no manual errors are active
   const switchMode = nextMode => {
     setMode(nextMode);
     const nextP = nextMode === 'even' ? even : odd;
@@ -452,7 +441,6 @@ function App() {
     triggerPulse();
   };
 
-  // Keyboard shortcuts for effortless hardware lab feel
   useEffect(() => {
     const onKeyDown = e => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -519,7 +507,6 @@ function App() {
       </header>
 
       <div id="top" className="content">
-        {/* Minimal Hero Header */}
         <section className="hero">
           <div className="eyebrow">
             <span className="eyebrow-pill">
@@ -542,7 +529,6 @@ function App() {
           </div>
         </section>
 
-        {/* 01: Input Control Stage */}
         <section className="input-section panel" id="inputs">
           <div className="section-top">
             <div>
@@ -609,7 +595,6 @@ function App() {
             ))}
           </div>
 
-          {/* Live Frame Telemetry Strip */}
           <div className="telemetry-bar">
             <div className="telemetry-group">
               <span className="readout-label">5-BIT FRAME PACKET</span>
@@ -658,7 +643,6 @@ function App() {
           </div>
         </section>
 
-        {/* 02: Interactive Logic Circuit */}
         <section className="circuit-section" id="circuit">
           <Circuit
             bits={bits}
@@ -669,7 +653,6 @@ function App() {
           />
         </section>
 
-        {/* Signal Breakdown & Equation Cards */}
         <section className="results-grid">
           <article className="result-card panel">
             <div className="result-head">
@@ -764,7 +747,6 @@ function App() {
           </article>
         </section>
 
-        {/* 03: Transmission Channel & Receiver Syndrome Checker */}
         <section className="checker-section panel" id="channel">
           <div className="section-top">
             <div>
@@ -791,7 +773,6 @@ function App() {
 
           {hasTransmitted && received && (
             <div className="channel-content">
-              {/* Visual TX -> Channel -> RX Pipeline */}
               <div className="channel-pipeline">
                 <div className="pipeline-node tx-node">
                   <span className="node-tag">TX SENDER</span>
@@ -815,7 +796,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Interactive RX Bit Flipper */}
               <div className="received-row">
                 <div className="received-label">
                   <span className="readout-label">RECEIVED 5-BIT WORD (CLICK ANY BIT TO CORRUPT / REPAIR)</span>
@@ -843,7 +823,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Receiver Diagnostic Banner */}
               <div
                 className={`checker-status ${
                   errorDetected ? 'has-error' : undetectedCollision ? 'has-warning' : 'no-error'
@@ -892,7 +871,6 @@ function App() {
           </div>
         </section>
 
-        {/* 04: Interactive Truth Table */}
         <section className="truth-section" id="truth-table">
           <div className="section-top">
             <div>
@@ -975,7 +953,6 @@ function App() {
           </div>
         </section>
 
-        {/* 05: Quick Theory Cards */}
         <section className="theory-section">
           <div className="section-top">
             <div>
